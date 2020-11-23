@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 #  Copyright (c) 2020, The OpenThread Authors.
 #  All rights reserved.
@@ -26,23 +27,48 @@
 #  POSSIBILITY OF SUCH DAMAGE.
 #
 
-name: API Version
+import urllib.request
+import json
+import os
+import logging
+import time
 
-on: [pull_request]
+_GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
+_HEADERS = {'Accept': 'application/vnd.github.v3+json', 'Authorization': f'Bearer {_GITHUB_TOKEN}'}
 
-jobs:
-  cancel-previous-runs:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: rokroskar/workflow-run-cleanup-action@master
-      env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      if: "github.ref != 'refs/heads/master'"
 
-  api-version:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v2
-    - name: Check
-      run: |
-        script/check-api-version
+def _main():
+    logging.getLogger().setLevel(logging.DEBUG)
+
+    while True:
+        url = f'https://api.github.com/repos/openthread/openthread/actions/artifacts'
+        logging.info('GET %s', url)
+        with urllib.request.urlopen(urllib.request.Request(
+                url=url,
+                headers=_HEADERS,
+        )) as response:
+            result = json.loads(response.read().decode())
+            logging.debug("Result: %s", result)
+
+        artifacts = [artifact for artifact in result['artifacts'] if artifact['name'].startswith('cov-')]
+        if not artifacts:
+            break
+
+        for artifact in artifacts:
+            if not artifact['name'].startswith('cov-'):
+                continue
+
+            artifact_id = artifact['id']
+            url = f'https://api.github.com/repos/openthread/openthread/actions/artifacts/{artifact_id}'
+            logging.info('DELETE %s', url)
+            with urllib.request.urlopen(urllib.request.Request(
+                    url=url,
+                    method='DELETE',
+            )):
+                pass
+
+        break
+
+
+if __name__ == "__main__":
+    _main()
