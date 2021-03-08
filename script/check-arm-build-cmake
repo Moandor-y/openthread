@@ -117,6 +117,7 @@ build_samr21()
 main()
 {
     export CPPFLAGS="${CPPFLAGS:-} -DNDEBUG"
+    export CFLAGS="${CFLAGS:-} -Werror=missing-prototypes"
 
     if [[ $# == 0 ]]; then
         build_cc1352

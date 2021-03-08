@@ -43,6 +43,8 @@
 #include <driverlib/prcm.h>
 #include <driverlib/trng.h>
 
+#include "platform-cc1352.h"
+
 enum
 {
     CC1352_TRNG_MIN_SAMPLES_PER_CYCLE = (1 << 6),

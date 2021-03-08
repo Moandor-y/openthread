@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include <openthread/instance.h>
+#include <openthread/platform/flash.h>
 
 #include <driverlib/aon_batmon.h>
 #include <driverlib/flash.h>
